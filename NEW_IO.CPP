@@ -1,13 +1,32 @@
-#include<iostream.h>
+#include<fstream.h>
 #include<dos.h>
 #include<graphics.h>
 #include<conio.h>
 #include<string.h>
+#include<stdlib.h>
 
-#define UP 80
-#define DOWN 72
+#define UP 72
+#define DOWN 80
 #define RIGHT 77
 #define LEFT 75
+#define ENTER 13
+
+void MainMenu();
+void AdminLogin();
+void AdminMain();
+void AdminSearch();
+void AdminEdit();
+void AdminView();
+void CustMain();
+void CustBook();
+void CustBookTickets();
+void CustBookPackage();
+void CustBookSeats(int,int,int,int);
+void CustViewBooking();
+void CustBrowse();
+void CustSearch();
+void CustTransaction(int,int,int,int);
+void ViewCredits();
 
 /**********************************CLASSES***********************************/
 class BUTTON
@@ -24,7 +43,7 @@ public:
   B=b;
   strcpy(Text,text);
  }
- void Display();
+ void Display(int);
 };
 
 class MENU
@@ -35,11 +54,22 @@ class MENU
  int X,Y;
  int L_b, B_b;
  char buttonText[][20];
+ int sel;
  void SetButtons();
 public:
  MENU(char T[],int N,int x, int y, int L, int B, char button_text[][20]);
  void Display();
+ int gsel(){return sel;}
+ void psel(int k){sel=k;}
+ int Rnum(){return numButtons;}
 };
+
+class BOOKING
+{
+ int R1,R2,H,S;
+ public:
+ void Write();
+}
 
 MENU::MENU(char T[],int N,int x, int y, int L, int B, char button_text[][20])
 {
@@ -50,8 +80,9 @@ MENU::MENU(char T[],int N,int x, int y, int L, int B, char button_text[][20])
  X=x;
  Y=y;
  for (int i = 0;i<numButtons;i++)
-  strcpy(buttonText[i],button_text[i]);
+  strcpy(buttonText[i],button_text[i ]);
  SetButtons();
+ sel=1;
 }
 
 void MENU::SetButtons()
@@ -60,30 +91,59 @@ void MENU::SetButtons()
   buttons[i].set(X,Y+(i*B_b),L_b,B_b,buttonText[i]);
 }
 
-void BUTTON::Display()
+void BUTTON::Display(int sel=0)
 {
  gotoxy(X,Y);
- cout<<char(218);
- for (int i = 0; i<L-2;i++)
-  cout<<char(196);
- cout<<char(191);
- cout<<endl;
- for (i = 1;i<=B-2;i++)
+ textcolor(BLUE);
+ if (sel)
  {
-  gotoxy(X,Y+i);
-  cout<<char(179);
-  for (int j = 0;j<L-2;j++)
-   cout<<' ';
-  cout<<char(179);
+  putch(char(214));		//201
+  for (int i = 0;i<L-2;i++)
+   putch(char(196));	        //205
+  putch(char(183));             //187
   cout<<endl;
+  for (i = 1;i<=B-2;i++)
+  {
+   gotoxy(X,Y+i);
+   putch(char(186));
+   for (int j = 0;j<L-2;j++)
+    cout<<' ';
+   putch(char(186));
+   cout<<endl;
+  }
+  gotoxy(X,Y+(B-1));
+  putch(char(211));
+  for (i = 0; i<L-2;i++)
+   putch(char(196));
+  putch(char(189));
  }
- gotoxy(X,Y+i);
- cout<<char(192);
- for (i=0;i<L-2;i++)
-  cout<<char(196);
- cout<<char(217);
- gotoxy(X+L/2-(strlen(Text)/2),Y+((B-1)/2));
+ else
+ {
+  cout<<char(218);
+  for (int i = 0;i<L-2;i++)
+   cout<<char(196);
+  cout<<char(191)<<endl;
+  for (i = 1;i<=B-2;i++)
+  {
+   gotoxy(X,Y+i);
+   cout<<char(179);
+   for (int j = 0;j<L-2;j++)
+    cout<<' ';
+   cout<<char(179);
+   cout<<endl;
+  }
+  gotoxy(X,Y+(B-1));
+  cout<<char(192);
+  for (i = 0; i<L-2;i++)
+   cout<<char(196);
+  cout<<char(217);
+ }
+ textcolor(WHITE);
+ if (sel)
+  textcolor(LIGHTGREEN);
+ gotoxy(X+(L/2)-(strlen(Text)/2),Y+(B/2));
  cprintf(Text);
+ textcolor(WHITE);
  cout<<endl;
 }
 
@@ -92,10 +152,10 @@ void MENU::Display()
  gotoxy(X+10,Y-3);
  cout<<Title;
  for (int i = 0; i<numButtons;i++)
-   buttons[i].Display();
+   buttons[i].Display(sel==i+1);
 }
 
-/**********************************LOGOS*************************************/
+/**********************************FUNCTIONS*********************************/
 void WelcomeScreen()
 {
  int gd = DETECT, gm,i;
@@ -214,10 +274,9 @@ void WelcomeScreen()
    line(400,319-i,389,323-i);delay(1);line(389,323-i,378,328-i);delay(1);line(378,328-i,368,333-i);delay(1);
    line(368,333-i,360,339-i);delay(1);line(360,339-i,351,346-i);delay(1);line(351,346-i,343,353-i);delay(1);
    line(343,353-i,334,367-i);delay(1);line(334,367-i,326,379-i);delay(1);line(326,379-i,320,397-i);delay(1);
-
  }
  settextstyle(8,0,5);
- outtextxy(65,410,"WELCOME TO BAT CITY!");
+ outtextxy(45,410,"WELCOME TO BAT CITY!");
  getch();
  closegraph();
 }
@@ -233,11 +292,30 @@ void MainMenu() 			//0
 {
  char T[][20] = {"Administrator Login","Customer Login","View Credits","Quit"};
  MENU M("LOGO HERE",4,25,5,30,3,T);
- M.Display();
+ while(1)
+ {
+  clrscr();
+  M.Display();
+  char in=getch();
+  if (in==UP && M.gsel()>1)
+   M.psel(M.gsel()-1);
+  else if (in==DOWN && M.gsel()<M.Rnum())
+   M.psel(M.gsel()+1);
+  else if (in==ENTER)
+   if (M.gsel()==1)
+    AdminLogin();
+   else if (M.gsel()==2)
+    CustMain();
+   else if (M.gsel()==3)
+    ViewCredits();
+   else if (M.gsel()==4)
+    exit(1);
+ }
 }
 
 void AdminLogin()			//1
 {
+ clrscr();
  char U[10],P[10];
  gotoxy(30,10);
  cout<<"LOGIN DETAILS";
@@ -245,29 +323,60 @@ void AdminLogin()			//1
  cout<<"Username: ";
  gotoxy(25,13);
  cout<<"Password: ";
+ _setcursortype(_NORMALCURSOR);
  gotoxy(35,12);
  cin>>U;
  gotoxy(35,13);
  cin>>P;
+ if (strcmp(U,"SHASHANK")==0 && strcmp(P,"PASSWORD")==0)
+ {
+  _setcursortype(_NOCURSOR);
+  AdminMain();
+ }
+ else
+ {
+  gotoxy(20,20);
+  cout<<"Incorrect password!";
+  delay(1000);
+  AdminLogin();
+ }
 }
 
 void AdminMain()			//10
 {
- char T[][20] = {"View bookings","Search booking","Download details","Back"};
+ char T[][20] = {"View bookings","Search booking","Edit attractions","Back"};
  MENU M("LOGO HERE",4,25,5,30,3,T);
- M.Display();
+ while(1)
+ {
+  clrscr();
+  M.Display();
+  char in=getch();
+  if (in==UP && M.gsel()>1)
+   M.psel(M.gsel()-1);
+  else if (in==DOWN && M.gsel()<M.Rnum())
+   M.psel(M.gsel()+1);
+  else if (in==ENTER)
+   if (M.gsel()==1)
+    AdminView();
+   else if (M.gsel()==2)
+    AdminSearch();
+   else if (M.gsel()==3)
+    AdminEdit();
+   else if (M.gsel()==4)
+    break;
+ }
 }
 
-void AdminDownload()			//103
+void AdminEdit()
 {
- gotoxy(34,13);
- cout<<"DOWNLOADED";
- //delay>>10
+ clrscr();
+ delay(1000);
 }
 
 void AdminSearch()			//102
 {
  cout<<"Search for entry";
+
 }
 
 void AdminView()                        //101
@@ -275,14 +384,40 @@ void AdminView()                        //101
  cout<<"View file";
  char T[][20] = {"Back"};
  MENU M("",1,30,20,20,3,T);
- M.Display();
+ while(1)
+ {
+  clrscr();
+  M.Display();
+  char in=getch();
+  if (in==ENTER)
+   if (M.gsel()==1)
+    break;
+ }
 }
 
 void CustMain() 			//2
 {
  char T[][20]={"Book tickets","Check booking","Browse attractions","Back"};
  MENU M("LOGO HERE",4,25,5,30,3,T);
- M.Display();
+ while(1)
+ {
+  clrscr();
+  M.Display();
+  char in=getch();
+  if (in==UP && M.gsel()>1)
+   M.psel(M.gsel()-1);
+  else if (in==DOWN && M.gsel()<M.Rnum())
+   M.psel(M.gsel()+1);
+  else if (in==ENTER)
+   if (M.gsel()==1)
+    CustBook();
+   else if (M.gsel()==2)
+    CustSearch();
+   else if (M.gsel()==3)
+    CustBrowse();
+   else if (M.gsel()==4)
+    break;
+ }
 }
 
 void CustBrowse()			//23
@@ -290,7 +425,15 @@ void CustBrowse()			//23
  cout<<"View attractions here";
  char T[][20] = {"Back"};
  MENU M("",1,30,20,20,3,T);
- M.Display();
+ while(1)
+ {
+  clrscr();
+  M.Display();
+  char in=getch();
+  if (in==ENTER)
+   if (M.gsel()==1)
+    break;
+ }
 }
 
 void CustBook()                         //21
@@ -298,21 +441,122 @@ void CustBook()                         //21
  char T[][20]={"Book Package","Book Tickets","Back"};
  MENU M("LOGO HERE",3,25,5,30,3,T);
  M.Display();
+ while(1)
+ {
+  clrscr();
+  M.Display();
+  char in=getch();
+  if (in==UP && M.gsel()>1)
+   M.psel(M.gsel()-1);
+  else if (in==DOWN && M.gsel()<M.Rnum())
+   M.psel(M.gsel()+1);
+  else if (in==ENTER)
+  {
+   if (M.gsel()==1)
+    CustBookPackage();
+   else if (M.gsel()==2)
+    CustBookTickets();
+   break;
+  }
+ }
 }
 
-void CustBookPackage() 			//211
+void CustBookPackage()
 {
  char T[][20] = {"Economy Package","Gold Package","Platinum Package","Back"};
  MENU M("LOGO HERE",4,25,5,30,3,T);
  M.Display();
+ while(1)
+ {
+  clrscr();
+  M.Display();
+  char in=getch();
+  if (in==UP && M.gsel()>1)
+   M.psel(M.gsel()-1);
+  else if (in==DOWN && M.gsel()<M.Rnum())
+   M.psel(M.gsel()+1);
+  else if (in==ENTER)
+   if (M.gsel()==1)
+   {
+    CustBookSeats(1,1,1,1);
+    break;
+   }
+   else if (M.gsel()==2)
+   {
+    CustBookSeats(2,2,6,4);
+    break;
+   }
+   else if (M.gsel()==3)
+   {
+    CustBookSeats(4,4,8,10);
+    break;
+   }
+   else if (M.gsel()==4)
+    break;
+ }
 }
 
-void CustBookTickets() 			//212
+void CustBookTickets()
 {
  cout<<"Book tickets here";
+ char T[][20] = {"Ride 1:   ","Ride 2:   ","Haunted House:    ","Show:       ","Confirm"};
+ MENU M("LOGO HERE",5,25,5,30,3,T);
+ clrscr();
+ int R1,R2,H,S;
+ M.Display();
+ _setcursortype(_NORMALCURSOR);
+ gotoxy(43,6);
+ cin>>R1;
+ M.psel(M.gsel()+1);
+ clrscr();
+ M.Display();
+ gotoxy(43,6);
+ cout<<R1;
+ gotoxy(43,9);
+ cin>>R2;
+ M.psel(M.gsel()+1);
+ clrscr();
+ M.Display();
+ gotoxy(43,6);
+ cout<<R1;
+ gotoxy(43,9);
+ cout<<R2;
+ gotoxy(46,12);
+ cin>>H;
+ M.psel(M.gsel()+1);
+ clrscr();
+ M.Display();
+ gotoxy(43,6);
+ cout<<R1;
+ gotoxy(43,9);
+ cout<<R2;
+ gotoxy(46,12);
+ cout<<H;
+ gotoxy(40,15);
+ cin>>S;
+ M.psel(M.gsel()+1);
+ clrscr();
+ M.Display();
+ gotoxy(43,6);
+ cout<<R1;
+ gotoxy(43,9);
+ cout<<R2;
+ gotoxy(46,12);
+ cout<<H;
+ gotoxy(40,15);
+ cout<<S;
+ while(1)
+ {
+  char in=getch();
+  if (in==ENTER)
+   if (M.gsel()==5)
+    break;
+ }
+
+ CustBookSeats(R1,R2,H,S);
 }
 
-void CustTransaction()                  //21100,21200
+void CustTransaction()
 {
  cout<<"Transaction here";
  char T[][20] = {"Confirm Transaction","Cancel Transaction"};
@@ -322,12 +566,14 @@ void CustTransaction()                  //21100,21200
  //Downloaded>>2
 }
 
-void CustBookSeats() 		        //2110,2120
+void CustBookSeats(int R1,int R2,int H, int S)
 {
+ clrscr();
  cout<<"Book seats here";
+ getch();
 }
 
-void CustSearch()                       //22
+void CustSearch()
 {
  char bookID[10];
  gotoxy(30,15);
@@ -343,11 +589,29 @@ void CustViewBooking()
  M.Display();
 }
 
+void ViewCredits()
+{
+ clrscr();
+ char T[][20] = {"Back"};
+ MENU M("",1,30,20,30,3,T);
+ while(1)
+ {
+  clrscr();
+  cout<<"View credits here";
+  M.Display();
+  char in=getch();
+  if (in==ENTER)
+   if (M.gsel()==1)
+    break;
+ }
+}
 /**********************************MAIN**************************************/
 void main()
 {
  clrscr();
- WelcomeScreen();
+ textcolor(WHITE);
+ _setcursortype(_NOCURSOR);
+ //WelcomeScreen();
  MainMenu();
  getch();
 }
