@@ -64,7 +64,7 @@ public:
  int Rnum(){return numButtons;}
 };
 
-class BOOKING
+struct BOOKING
 {
  int R1,R2,H,S;
  public:
@@ -286,6 +286,35 @@ void printLogo()
  //..
 }
 
+int contains(int A[][2], int R,int C, int N)
+{
+ for (int i = 0;i<N;i++)
+  if (A[i][0]==R && A[i][1] == C)
+   return 1;
+ return 0;
+}
+
+void printSeats(char seats[][20],int R,int C,int sel[][2],int Nsel, int cursel[2])
+{
+ for (int i = 0;i<R;i++)
+ {
+  for(int j = 0;j<C;j++)
+  {
+   if (contains(sel,i,j,Nsel)||(cursel[0]==i && cursel[1] ==j))
+    textcolor(LIGHTBLUE);
+   else if (seats[i][j]=='B')
+    textcolor(RED);
+   else if (seats[i][j]=='E')
+    textcolor(LIGHTGREEN);
+   putch(char(178));
+   cout<<" ";
+  }
+  cout<<endl<<endl;
+ }
+
+}
+
+
 /**********************************MENUS*************************************/
 
 void MainMenu() 			//0
@@ -316,7 +345,7 @@ void MainMenu() 			//0
 void AdminLogin()			//1
 {
  clrscr();
- char U[10],P[10];
+ char U[10];
  gotoxy(30,10);
  cout<<"LOGIN DETAILS";
  gotoxy(25,12);
@@ -327,6 +356,7 @@ void AdminLogin()			//1
  gotoxy(35,12);
  cin>>U;
  gotoxy(35,13);
+ char P[10];
  cin>>P;
  if (strcmp(U,"SHASHANK")==0 && strcmp(P,"PASSWORD")==0)
  {
@@ -569,8 +599,55 @@ void CustTransaction()
 void CustBookSeats(int R1,int R2,int H, int S)
 {
  clrscr();
- cout<<"Book seats here";
+ fstream fil("bookings.dat",ios::in|ios::binary);
+ BOOKING B;
+ while(fil.read((char*)&B,sizeof(B)))
+ {
+  //...DO NOT RUN
+ }
+
+ int sel[5][2],Nsel=0, cursel[2]={0,0};
+ /*temp --> comes from file*/char seats[][20] = {{'E','E','B','B','E'},{'E','B','B','B','E'},{'B','B','B','B','B'}};
+ int R,C;
+ R=7;
+ C=20;
+ /*tempval*/int classicLimit=1,premiumLimit=2,jokerLimit=3;
+ int cost=0;
+ int classicCost=5,premiumCost=10,jokerCost=20;
+ while(Nsel<S)
+ {
+  clrscr();
+  printSeats(seats,R,C,sel,Nsel,cursel);
+  char in = getch();
+  if (in==UP&&cursel[0]>0&&!contains(sel,cursel[0]-1,cursel[1],Nsel))
+   cursel[0]--;
+  else if (in==DOWN&&cursel[0]<R-1&&!contains(sel,cursel[0]+1,cursel[1],Nsel))
+   cursel[0]++;
+  else if (in==RIGHT&&cursel[1]<C-1&&!contains(sel,cursel[0],cursel[1]+1,Nsel))
+   cursel[1]++;
+  else if (in==LEFT&&cursel[1]>0&&!contains(sel,cursel[0],cursel[1]-1,Nsel))
+   cursel[1]--;
+  else if (in==ENTER)
+  {
+   if (!contains(sel,cursel[0],cursel[1],S))
+   {
+    sel[Nsel][0]=cursel[0];
+    sel[Nsel++][1]=cursel[1];
+    if (cursel[1]<R)
+     cursel[1]++;
+    else cursel[1]--;
+   }
+  }
+ }
+ for (int i = 0;i<S;i++)
+  if (sel[i][0]<classicLimit)
+   cost+=classicCost;
+  else if (sel[i][0]<premiumLimit)
+   cost+=premiumCost;
+  else cost+=jokerCost;
+ cout<<cost;
  getch();
+
 }
 
 void CustSearch()
@@ -606,12 +683,15 @@ void ViewCredits()
  }
 }
 /**********************************MAIN**************************************/
+
+
 void main()
 {
  clrscr();
  textcolor(WHITE);
  _setcursortype(_NOCURSOR);
  //WelcomeScreen();
- MainMenu();
+ //MainMenu();
+ CustBookSeats(3,3,3,3);
  getch();
 }
