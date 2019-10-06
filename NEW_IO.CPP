@@ -1,6 +1,7 @@
 #include<fstream.h>
 #include<dos.h>
 #include<graphics.h>
+#include<stdio.h>
 #include<conio.h>
 #include<string.h>
 #include<stdlib.h>
@@ -118,6 +119,7 @@ void BUTTON::Display(int sel=0)
  }
  else
  {
+
   cout<<char(218);
   for (int i = 0;i<L-2;i++)
    cout<<char(196);
@@ -130,6 +132,7 @@ void BUTTON::Display(int sel=0)
     cout<<' ';
    cout<<char(179);
    cout<<endl;
+
   }
   gotoxy(X,Y+(B-1));
   cout<<char(192);
@@ -280,11 +283,6 @@ void WelcomeScreen()
  closegraph();
 }
 
-void printLogo()
-{
- //..
-}
-
 int contains(int A[][2], int R,int C, int N)
 {
  for (int i = 0;i<N;i++)
@@ -320,17 +318,61 @@ void printSeats(int X, int Y,int R,int C,int bookedSeats[][2], int Nbook,int sel
   putch(char(196));
 }
 
+void deleteS(int A[][2], int &N, int R[2])
+{
+ for (int i  =0;i<N;i++)
+ {
+  if (A[i][0]==R[0] && A[i][1]==R[1])
+  {
+   for(int j =i;j<N-1;j++)
+   {
+    A[j][0] = A[j+1][0];
+    A[j][1] = A[j+1][1];
+   }
+   break;
+  }
+ }
+ N--;
+}
+
+void printLogo()
+{
+ //Line 1
+ gotoxy(24,1);
+ cout<<char(203)<<char(205)<<char(187)<<"      "<<char(186)<<"  "<<char(186);
+ cout<<"          "<<char(186);\
+ cout<<endl;
+ //Line 2
+ gotoxy(24,2);
+ cout<<char(204)<<char(205)<<char(185)<<' '<<char(205)<<char(205)<<char(187)<<' '<<char(205)<<char(206)<<char(205)<<' '<<char(186)<<' '<<char(205)<<char(205)<<char(187);
+ cout<<' '<<char(204)<<char(205)<<char(187)<<' '<<char(205)<<char(206)<<char(205)<<' '<<char(223);
+ cout<<' '<<char(201)<<char(205)<<char(205);
+ cout<<endl;
+ //Line 3
+ gotoxy(24,3);
+ cout<<char(186)<<' '<<char(186)<<' '<<char(201)<<char(205)<<char(185)<<"  "<<char(186)<<"  "<<char(186)<<' '<<char(201)<<char(205)<<char(185);
+ cout<<' '<<char(186)<<' '<<char(186)<<"  "<<char(186)<<"  "<<char(186);
+ cout<<' '<<char(200)<<char(205)<<char(187);
+ cout<<endl;
+ //Line 4
+ gotoxy(24,4);
+ cout<<char(202)<<char(205)<<char(188)<<' '<<char(200)<<char(205)<<char(202)<<"  "<<char(186)<<"  "<<char(186)<<' '<<char(200)<<char(205)<<char(202);
+ cout<<' '<<char(186)<<' '<<char(186)<<"  "<<char(186)<<"  "<<char(186);
+ cout<<' '<<char(205)<<char(205)<<char(188);
+}
+
 
 /**********************************MENUS*************************************/
 
 void MainMenu() 			//0
 {
  char T[][20] = {"Administrator Login","Customer Login","View Credits","Quit"};
- MENU M("LOGO HERE",4,25,5,30,3,T);
+ MENU M("",4,25,8,30,3,T);
  while(1)
  {
   clrscr();
   M.Display();
+  printLogo();
   char in=getch();
   if (in==UP && M.gsel()>1)
    M.psel(M.gsel()-1);
@@ -351,6 +393,7 @@ void MainMenu() 			//0
 void AdminLogin()
 {
  clrscr();
+ printLogo();
  char U[10];
  gotoxy(30,10);
  cout<<"LOGIN DETAILS";
@@ -381,11 +424,12 @@ void AdminLogin()
 void AdminMain()
 {
  char T[][20] = {"View bookings","Search booking","Back"};
- MENU M("LOGO HERE",3,25,5,30,3,T);
+ MENU M("",3,25,8,30,3,T);
  while(1)
  {
   clrscr();
   M.Display();
+  printLogo();
   char in=getch();
   if (in==UP && M.gsel()>1)
    M.psel(M.gsel()-1);
@@ -403,13 +447,57 @@ void AdminMain()
 
 void AdminView()
 {
- cout<<"View file";
  char T[][20] = {"Back"};
- MENU M("",1,30,20,20,3,T);
+ MENU M("",1,30,23,20,3,T);
+ int booked[20][2], Nbook=0;
+ int R1=0,R2=0,H=0,S=0;
+ fstream F("DATA.dat",ios::in|ios::binary);
+ BOOKING B;
+ while(F.read((char*)&B,sizeof(B)))
+ {
+  R1+=B.R1;
+  R2+=B.R2;
+  H+=B.H;
+  S+=B.S;
+  for (int i = 0;i<S;i++)
+  {
+   booked[Nbook][0] = B.seats[i][0];
+   booked[Nbook++][1] = B.seats[i][1];
+  }
+ }
+ F.close();
+ int R=7,C=20;
+ BUTTON P;
+ P.set(12,6,20,3,"SEAT BOOKINGS");
  while(1)
  {
   clrscr();
+  for (int i = 0; i<R;i++)
+  {
+   gotoxy(3,9+(2*i));
+   for(int j  =0; j<C;j++)
+   {
+    if (contains(booked,i,j,Nbook))
+     textcolor(RED);
+    else textcolor(LIGHTGREEN);
+    putch(char(178));
+    cout<<' ';
+   }
+   textcolor(WHITE);
+  }
+  gotoxy(53,10);
+  cout<<"Number of tickets booked ==>";
+  gotoxy(55,12);
+  cout<<"Ride 1: "<<R1;
+  gotoxy(55,14);
+  cout<<"Ride 2: "<<R2;
+  gotoxy(55,16);
+  cout<<"Haunted House: "<<H;
+  gotoxy(55,18);
+  cout<<"Show: " <<S;
   M.Display();
+  P.Display();
+  printLogo();
   char in=getch();
   if (in==ENTER)
    if (M.gsel()==1)
@@ -420,11 +508,12 @@ void AdminView()
 void CustMain()
 {
  char T[][20]={"Book tickets","Check booking","Browse attractions","Back"};
- MENU M("LOGO HERE",4,25,5,30,3,T);
+ MENU M("",4,25,8,30,3,T);
  while(1)
  {
   clrscr();
   M.Display();
+  printLogo();
   char in=getch();
   if (in==UP && M.gsel()>1)
    M.psel(M.gsel()-1);
@@ -451,6 +540,7 @@ void CustBrowse()
  {
   clrscr();
   M.Display();
+  printLogo();
   char in=getch();
   if (in==ENTER)
    if (M.gsel()==1)
@@ -461,12 +551,13 @@ void CustBrowse()
 void CustBook()                         //21
 {
  char T[][20]={"Book Package","Book Tickets","Back"};
- MENU M("LOGO HERE",3,25,5,30,3,T);
+ MENU M("",3,25,8,30,3,T);
  M.Display();
  while(1)
  {
   clrscr();
   M.Display();
+  printLogo();
   char in=getch();
   if (in==UP && M.gsel()>1)
    M.psel(M.gsel()-1);
@@ -486,12 +577,13 @@ void CustBook()                         //21
 void CustBookPackage()
 {
  char T[][20] = {"Economy Package","Gold Package","Platinum Package","Back"};
- MENU M("LOGO HERE",4,25,5,30,3,T);
+ MENU M("",4,25,8,30,3,T);
  M.Display();
  while(1)
  {
   clrscr();
   M.Display();
+  printLogo();
   char in=getch();
   if (in==UP && M.gsel()>1)
    M.psel(M.gsel()-1);
@@ -522,50 +614,55 @@ void CustBookTickets()
 {
  cout<<"Book tickets here";
  char T[][20] = {"Ride 1:   ","Ride 2:   ","Haunted House:    ","Show:       ","Confirm"};
- MENU M("LOGO HERE",5,25,5,30,3,T);
+ MENU M("",5,25,8,30,3,T);
  clrscr();
  int R1,R2,H,S;
  M.Display();
+ printLogo();
  _setcursortype(_NORMALCURSOR);
- gotoxy(43,6);
+ gotoxy(43,9);
  cin>>R1;
  M.psel(M.gsel()+1);
  clrscr();
  M.Display();
- gotoxy(43,6);
- cout<<R1;
+ printLogo();
  gotoxy(43,9);
+ cout<<R1;
+ gotoxy(43,12);
  cin>>R2;
  M.psel(M.gsel()+1);
  clrscr();
  M.Display();
- gotoxy(43,6);
- cout<<R1;
+ printLogo();
  gotoxy(43,9);
+ cout<<R1;
+ gotoxy(43,12);
  cout<<R2;
- gotoxy(46,12);
+ gotoxy(46,15);
  cin>>H;
  M.psel(M.gsel()+1);
  clrscr();
  M.Display();
- gotoxy(43,6);
- cout<<R1;
+ printLogo();
  gotoxy(43,9);
+ cout<<R1;
+ gotoxy(43,12);
  cout<<R2;
- gotoxy(46,12);
+ gotoxy(46,15);
  cout<<H;
- gotoxy(40,15);
+ gotoxy(40,18);
  cin>>S;
  M.psel(M.gsel()+1);
  clrscr();
  M.Display();
- gotoxy(43,6);
- cout<<R1;
+ printLogo();
  gotoxy(43,9);
+ cout<<R1;
+ gotoxy(43,12);
  cout<<R2;
- gotoxy(46,12);
+ gotoxy(46,15);
  cout<<H;
- gotoxy(40,15);
+ gotoxy(40,18);
  cout<<S;
  while(1)
  {
@@ -582,27 +679,28 @@ void CustTransaction(int R1, int R2,int H, int S, int seats[10][2], int cost)
  clrscr();
  int id = random(10000)+1;
  char T[][20] = {"Confirm Transaction","Cancel Transaction"};
- MENU M("",2,25,15,30,3,T);
+ MENU M("",2,25,20,30,3,T);
  while(1)
  {
   clrscr();
-  gotoxy(20,4);
-  cout<<"Booking Reference ID: "<<id;
-  gotoxy(20,6);
-  cout<<"Tickets for Ride 1: "<<R1;
-  gotoxy(20,7);
-  cout<<"Tickets for Ride 2: "<<R2;
   gotoxy(20,8);
-  cout<<"Tickets for The Haunted House: "<<H;
-  gotoxy(20,9);
-  cout<<"Tickets for the show: "<<S;
+  cout<<"Booking Reference ID: "<<id;
+  gotoxy(20,10);
+  cout<<"Tickets for Ride 1: "<<R1;
   gotoxy(20,11);
+  cout<<"Tickets for Ride 2: "<<R2;
+  gotoxy(20,12);
+  cout<<"Tickets for The Haunted House: "<<H;
+  gotoxy(20,13);
+  cout<<"Tickets for the show: "<<S;
+  gotoxy(20,14);
   cout<<"Seats Booked: ";
   for (int i = 0;i<S;i++)
    cout<<char(seats[i][0]+65)<<seats[i][1]+1<<" ";
-  gotoxy(20,13);
+  gotoxy(20,16);
   cout<<"Total Cost: "<<cost;
   M.Display();
+  printLogo();
   char in=getch();
   if (in==UP && M.gsel()>1)
    M.psel(M.gsel()-1);
@@ -623,10 +721,33 @@ void CustTransaction(int R1, int R2,int H, int S, int seats[10][2], int cost)
      B.seats[i][0]=seats[i][0];
      B.seats[i][1]=seats[i][1];
     }
-    fstream F("bookings.dat",ios::app|ios::binary);
-    F.write((char*)&B,sizeof(B));
+    fstream F("DATA.dat",ios::app|ios::binary);
+    F.write((char*)&B,sizeof(B));           +
     F.close();
-    //Download text file recipt
+    ofstream R("RECEIPT.txt");
+    R<<"      	   BATLANTIS\n";
+    R<<"      Transaction Receipt\n";
+    R<<"------------------------------------\n"<<endl;
+
+    R<<"  Booking Reference ID ==> "<<id<<endl<<endl;
+    R<<" Tickets booked for Ride 1: "<<R1<<endl;
+    R<<" Tickets booked for Ride 2: "<<R2<<endl;
+    R<<" Tickets booked for Haunted House: "<<H<<endl;
+    R<<" Tickets booked for the Show: "<<S<<endl<<endl;
+    R<<" Seats booked for the Show: ";
+    for (i = 0;i<S;i++)
+     R<<char(seats[i][0]+65)<<seats[i][1]+1<<" ";
+    R<<endl<<endl;
+    R<<"------------------------------------\n";
+    R<<"       Total price==>"<<cost;
+    R<<endl<<endl;
+    R<<"Thanks for booking your entertainment with us!\n";
+    R<<" We hope you have a great time at Batlantis!\n"<<endl<<endl;
+    R<<"------------------------------------\n";
+    R<< "Batright 2019. All rights reserved.";
+    R.close();
+
+    printLogo();
     gotoxy(30,10);
     cout<<"Downloaded receipt";
     delay(1000);
@@ -640,7 +761,7 @@ void CustTransaction(int R1, int R2,int H, int S, int seats[10][2], int cost)
 void CustBookSeats(int R1,int R2,int H, int S)
 {
  clrscr();
- fstream fil("BOOKINGS.dat",ios::in|ios::binary);
+ fstream fil("DATA.dat",ios::in|ios::binary);
  int booked[20][2], Nbook=0;
  BOOKING B;
  while(fil.read((char*)&B,sizeof(B)))
@@ -670,6 +791,7 @@ void CustBookSeats(int R1,int R2,int H, int S)
   clrscr();
   T.Display();
   printSeats(3,9,R,C,booked,Nbook,sel,Nsel,cursel);
+  printLogo();
   char in = getch();
   if (in==UP&&cursel[0]>0&&!contains(booked,cursel[0]-1,cursel[1],Nbook))
    cursel[0]--;
@@ -686,10 +808,9 @@ void CustBookSeats(int R1,int R2,int H, int S)
     sel[Nsel++][1]=cursel[1];
    }
    else
-   {
-    //Delete element {cursel[0],cursel[1]} from 2D array sel[][2]
-   }
- }
+    deleteS(sel,Nsel,cursel);
+  }
+
  for (i = 0;i<S;i++)
   if (sel[i][0]<classicLimit)
    cost+=classicCost;
@@ -698,10 +819,12 @@ void CustBookSeats(int R1,int R2,int H, int S)
   else cost+=jokerCost;
  char MT[][20] = {"Confirm Seats","Cancel booking"};
  MENU M("",2,45,10,20,3,MT);
+ cursel[0] = -1;
  while(1)
  {
   clrscr();
   T.Display();
+  printLogo();
   printSeats(3,9,R,C,booked,Nbook,sel,Nsel,cursel);
   M.Display();
   char in=getch();
@@ -727,6 +850,7 @@ void SearchBooking()
  int bookID;
  char T[][20] = {"Search booking","Search again","Back"};
  MENU M("",3,25,10,30,3,T);
+ printLogo();
  gotoxy(20,7);
  cout<<"Enter Booking Reference ID: ";
  cin>>bookID;
@@ -735,6 +859,7 @@ void SearchBooking()
   clrscr();
   BOOKING B;
   M.Display();
+  printLogo();
   char in=getch();
   if (in==UP && M.gsel()>1)
    M.psel(M.gsel()-1);
@@ -744,16 +869,19 @@ void SearchBooking()
    if (M.gsel()==1)
    {
     int found=0;
-    fstream F("bookings.dat",ios::in|ios::out);
+    fstream F("DATA.dat",ios::in|ios::out);
     while(F.read((char*)&B,sizeof(B)) && !found)
-    if (B.id==bookID)
-     found=1;
+     if (B.id==bookID)
+      found=1;
     F.close();
     if (found)
+    {
      ViewBooking(B);
+     break;
+    }
     else
     {
-     gotoxy(30,5);
+     gotoxy(27,8);
      cout<<"Sorry, Booking not found!";
      delay(1000);
      SearchBooking();
@@ -777,21 +905,22 @@ void ViewBooking(BOOKING B)
  while(1)
  {
   clrscr();
-  gotoxy(5,5);
-  cout<<"Booking Refernce ID: "<<B.id;
-  gotoxy(5,7);
-  cout<<"Ride 1: "<<B.R1;
-  gotoxy(5,8);
-  cout<<"Ride 2: "<<B.R2;
-  gotoxy(5,9);
-  cout<<"Haunted House: "<<B.H;
   gotoxy(5,10);
-  cout<<"Show: "<<B.S;
+  cout<<"Booking Refernce ID: "<<B.id;
   gotoxy(5,12);
+  cout<<"Ride 1: "<<B.R1;
+  gotoxy(5,13);
+  cout<<"Ride 2: "<<B.R2;
+  gotoxy(5,14);
+  cout<<"Haunted House: "<<B.H;
+  gotoxy(5,15);
+  cout<<"Show: "<<B.S;
+  gotoxy(5,16);
   cout<<"Seats: ";
   for (int i = 0;i<B.S;i++)
    cout<<char(B.seats[i][0]+65)<<B.seats[i][1]+1<<' ';
   M.Display();
+  printLogo();
   char in=getch();
   if (in==UP && M.gsel()>1)
    M.psel(M.gsel()-1);
@@ -800,7 +929,25 @@ void ViewBooking(BOOKING B)
   else if (in==ENTER)
    if (M.gsel()==1)
    {
-    //Cancel booking
+    BOOKING temp;
+    fstream Fil1,Fil2;
+    Fil1.open("DATA.dat",ios::binary|ios::in);
+    Fil2.open("TEMP.dat",ios::binary|ios::out);
+    while (Fil1.read((char*)&temp,sizeof(temp)))
+    {
+     if (B.id!=temp.id)
+      Fil2.write((char*)&temp,sizeof(temp));
+    }
+    Fil1.close();
+    Fil2.close();
+    remove("DATA.dat");
+    rename("TEMP.dat","DATA.dat");
+    clrscr();
+    printLogo();
+    gotoxy(20,10);
+    cout<<"Booking cancelled!";
+    delay(2000);
+    break;
    }
    else if (M.gsel()==2)
     break;
@@ -817,6 +964,7 @@ void ViewCredits()
   clrscr();
   cout<<"View credits here";
   M.Display();
+  printLogo();
   char in=getch();
   if (in==ENTER)
    if (M.gsel()==1)
@@ -833,4 +981,5 @@ void main()
  _setcursortype(_NOCURSOR);
  //WelcomeScreen();
  MainMenu();
+ getch();
 }
