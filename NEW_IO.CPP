@@ -161,7 +161,7 @@ void MENU::Display()
 void WelcomeScreen()
 {
  int gd = DETECT, gm,i;
- initgraph(&gd, &gm, "C:\\TURBOC3\\BGI");
+ initgraph(&gd, &gm, "C:\\BGI");
  line(26,192,39,198);delay(70);line(39,198,49,203);delay(70);line(49,203,61,210);delay(70);
  line(61,210,73,218);delay(70);line(73,218,83,225);delay(70);line(83,225,91,233);delay(70);
  line(91,233,99,244);delay(70);line(99,244,106,256);delay(70);line(106,256,111,267);delay(70);
