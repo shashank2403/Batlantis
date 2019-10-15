@@ -12,6 +12,7 @@
 #define RIGHT 77
 #define LEFT 75
 #define ENTER 13
+#define BACK 8
 
 void MainMenu();
 void AdminLogin();
@@ -23,12 +24,17 @@ void CustBook();
 void CustBookTickets();
 void CustBookPackage();
 void CustBookSeats(int,int,int,int);
-void CustBrowse();
+void CustBrowseR1();
+void CustBrowseR2();
+void CustBrowseH();
+void CustBrowseS();
+void CustBrowseP();
 void SearchBooking();
 void CustTransaction(int,int,int,int, int[][2],int);
 void ViewCredits();
 
 /**********************************CLASSES***********************************/
+
 class BUTTON
 {
  char Text[20];
@@ -158,10 +164,11 @@ void MENU::Display()
 }
 
 /**********************************FUNCTIONS*********************************/
+
 void WelcomeScreen()
 {
  int gd = DETECT, gm,i;
- initgraph(&gd, &gm, "C:\\BGI");
+ initgraph(&gd, &gm, "C:\\TURBOC3\\BGI");
  line(26,192,39,198);delay(70);line(39,198,49,203);delay(70);line(49,203,61,210);delay(70);
  line(61,210,73,218);delay(70);line(73,218,83,225);delay(70);line(83,225,91,233);delay(70);
  line(91,233,99,244);delay(70);line(99,244,106,256);delay(70);line(106,256,111,267);delay(70);
@@ -297,7 +304,6 @@ void printSeats(int X, int Y,int R,int C,int bookedSeats[][2], int Nbook,int sel
 void deleteS(int A[][2], int &N, int R[2])
 {
  for (int i  =0;i<N;i++)
- {
   if (A[i][0]==R[0] && A[i][1]==R[1])
   {
    for(int j =i;j<N-1;j++)
@@ -307,7 +313,6 @@ void deleteS(int A[][2], int &N, int R[2])
    }
    break;
   }
- }
  N--;
 }
 
@@ -392,6 +397,11 @@ void AdminLogin()
    P[l+1] = '\0';
    cout<<'*';
   }
+  else if (temp==BACK && strlen(P)>0)
+  {
+   P[strlen(P)-1]='\0';
+   cout<<"\b \b";
+  }
   else if (temp == ENTER)
    break;
  }
@@ -404,8 +414,30 @@ void AdminLogin()
  {
   gotoxy(27,17);
   cout<<"Invalid login details!";
-  delay(1000);
-  AdminLogin();
+  char T[][20] = {"Try Again","Back"};
+  MENU M("",2,30,18,20,3,T);
+  while(1)
+  {
+   _setcursortype(_NOCURSOR);
+   clrscr();
+   M.Display();
+   printLogo();
+   gotoxy(27,10);
+   cout<<"Incorrect login details!";
+   char in=getch();
+   if (in==UP && M.gsel()>1)
+    M.psel(M.gsel()-1);
+   else if (in==DOWN && M.gsel()<M.Rnum())
+    M.psel(M.gsel()+1);
+   else if (in==ENTER)
+    if (M.gsel()==1)
+    {
+     AdminLogin();
+     break;
+    }
+    else if (M.gsel()==2)
+     break;
+  }
  }
 }
 
@@ -476,13 +508,13 @@ void AdminView()
   gotoxy(53,10);
   cout<<"Number of tickets booked ==>";
   gotoxy(55,12);
-  cout<<"Ride 1: "<<R1;
+  cout<<"Gotham Street: "<<R1;
   gotoxy(55,14);
-  cout<<"Ride 2: "<<R2;
+  cout<<"Batcave: "<<R2;
   gotoxy(55,16);
-  cout<<"Haunted House: "<<H;
+  cout<<"The Killing Joke: "<<H;
   gotoxy(55,18);
-  cout<<"Show: " <<S;
+  cout<<"Justice League: " <<S;
   M.Display();
   P.Display();
   printLogo();
@@ -513,86 +545,173 @@ void CustMain()
    else if (M.gsel()==2)
     SearchBooking();
    else if (M.gsel()==3)
-    CustBrowse();
+    CustBrowseR1();
    else if (M.gsel()==4)
     break;
  }
 }
 
-void CustBrowse()
+void CustBrowseR1()
 {
- char T[][20] = {"Back"};
- MENU M("",1,30,12,20,3,T);
- clrscr();
- printLogo();
- gotoxy(1,8);
- cout<<"Browse through the different attractions at Batlantis ==>"<<endl;
- cout<<"I. Ride 1"<<endl;
- cout<<"   An adventure through the streets of Gotham, rescued by the Dark Knight."<<endl;
- cout<<"   Cost per head = 5 Dans		Duration = 20 minutes"<<endl<<endl;
- for (int i = 10;i>0;i--)
+ char T[][20] = {"Next","Back"};
+ MENU M("",2,30,18,20,3,T);
+ while(1)
  {
-  gotoxy(1,13);
-  cout<<"Scrolling in "<<i<<" seconds ";
-  delay(1000);
+  clrscr();
+  M.Display();
+  printLogo();
+  gotoxy(1,8);
+  cout<<"Browse through the different attractions at Batlantis ==>"<<endl;
+  cout<<"I. Gotham Street"<<endl;
+  cout<<"   An adventure through the streets of Gotham, rescued by the Dark Knight."<<endl;
+  cout<<"   Cost per head = 5 Dans		Duration = 20 minutes"<<endl<<endl;
+  char in=getch();
+  if (in==UP && M.gsel()>1)
+   M.psel(M.gsel()-1);
+  else if (in==DOWN && M.gsel()<M.Rnum())
+   M.psel(M.gsel()+1);
+  else if (in==ENTER)
+   if (M.gsel()==1)
+   {
+    CustBrowseR2();
+    break;
+   }
+   else if (M.gsel()==2)
+    break;
  }
- clrscr();
- printLogo();
- gotoxy(1,8);
- cout<<"Browse through the different attractions at Batlantis ==>"<<endl;
- cout<<"II. Ride 2"<<endl;
- cout<<"    A terrifying tour through the BatCave in the west wing of Wayne Manor"<<endl;
- cout<<"    Cost per head = 7 Dans			Duration = 15 minutes"<<endl;
- for (i=10;i>0;i--)
+}
+
+void CustBrowseR2()
+{
+ char T[][20] = {"Next","Back"};
+ MENU M("",2,30,18,20,3,T);
+ while(1)
  {
-  gotoxy(1,13);
-  cout<<"Scrolling in "<<i<<" seconds ";
-  delay(1000);
+  clrscr();
+  M.Display();
+  printLogo();
+  gotoxy(1,8);
+  cout<<"Browse through the different attractions at Batlantis ==>"<<endl;
+  cout<<"II. Batcave"<<endl;
+  cout<<"    A terrifying tour through the Batcave in the west wing of Wayne Manor"<<endl;
+  cout<<"    Cost per head = 7 Dans			Duration = 15 minutes"<<endl;
+  char in=getch();
+  if (in==UP && M.gsel()>1)
+   M.psel(M.gsel()-1);
+  else if (in==DOWN && M.gsel()<M.Rnum())
+   M.psel(M.gsel()+1);
+  else if (in==ENTER)
+   if (M.gsel()==1)
+   {
+    CustBrowseH();
+    break;
+   }
+   else if (M.gsel()==2)
+   {
+    CustBrowseR1();
+    break;
+   }
  }
- clrscr();
- printLogo();
- gotoxy(1,8);
- cout<<"Browse through the different attractions at Batlantis ==>"<<endl;
- cout<<"III. Haunted House"<<endl;
- cout<<"     Discover what secrets lurk about in the Joker's lair."<<endl;
- cout<<"     Cost per head = 12 Dans			Duration = 30 minutes"<<endl;
- for (i=10;i>0;i--)
+}
+
+void CustBrowseH()
+{
+ char T[][20] = {"Next","Back"};
+ MENU M("",2,30,18,20,3,T);
+ while(1)
  {
-  gotoxy(1,13);
-  cout<<"Scrolling in "<<i<<" seconds ";
-  delay(1000);
+  clrscr();
+  M.Display();
+  printLogo();
+  gotoxy(1,8);
+  cout<<"Browse through the different attractions at Batlantis ==>"<<endl;
+  cout<<"III. The Killing Joke"<<endl;
+  cout<<"     Discover what secrets lurk about in the Joker's lair."<<endl;
+  cout<<"     Cost per head = 12 Dans			Duration = 30 minutes"<<endl;
+  char in=getch();
+  if (in==UP && M.gsel()>1)
+   M.psel(M.gsel()-1);
+  else if (in==DOWN && M.gsel()<M.Rnum())
+   M.psel(M.gsel()+1);
+  else if (in==ENTER)
+   if (M.gsel()==1)
+   {
+    CustBrowseS();
+    break;
+   }
+   else if (M.gsel()==2)
+   {
+    CustBrowseR2();
+    break;
+   }
  }
- clrscr();
- printLogo();
- gotoxy(1,8);
- cout<<"Browse through the different attractions at Batlantis ==>"<<endl;
- cout<<"IV. Show"<<endl;
- cout<<"   Watch the Justice League defend the Earth against the greatest supervillains."<<endl;
- cout<<"    Cost per head ->				Duration = 30 minutes"<<endl;
- cout<<"     Classic section (Rows A to C) = 5 Dans"<<endl;
- cout<<"     Premium section (Rows D to F) = 10 Dans"<<endl;
- cout<<"     Joker section (Rows G to J)  = 20 Dans"<<endl;
- for (i=10;i>0;i--)
+}
+
+void CustBrowseS()
+{
+ char T[][20] = {"Next","Back"};
+ MENU M("",2,30,18,20,3,T);
+ while(1)
  {
-  gotoxy(1,20);
-  cout<<"Scrolling in "<<i<<" seconds ";
-  delay(1000);
+  clrscr();
+  M.Display();
+  printLogo();
+  gotoxy(1,8);
+  cout<<"Browse through the different attractions at Batlantis ==>"<<endl;
+  cout<<"IV. Justice League"<<endl;
+  cout<<"    Watch the Justice League defend the Earth against the greatest supervillains."<<endl;
+  cout<<"     Cost per head ->				Duration = 30 minutes"<<endl;
+  cout<<"      Classic section (Rows A to C) = 5 Dans"<<endl;
+  cout<<"      Premium section (Rows D to F) = 10 Dans"<<endl;
+  cout<<"      Joker section (Rows G to J)  = 20 Dans"<<endl;
+  char in=getch();
+  if (in==UP && M.gsel()>1)
+   M.psel(M.gsel()-1);
+  else if (in==DOWN && M.gsel()<M.Rnum())
+   M.psel(M.gsel()+1);
+  else if (in==ENTER)
+   if (M.gsel()==1)
+   {
+    CustBrowseP();
+    break;
+   }
+   else if (M.gsel()==2)
+   {
+    CustBrowseH();
+    break;
+   }
  }
- clrscr();
- printLogo();
- gotoxy(1,8);
- cout<<"Save time and money by purchasing group packages==>"<<endl<<endl;
- cout<<"  -> Economy Package consists of 1 ticket each for Ride 1, Ride 2, Haunted House and Show."<<endl;
- cout<<"  -> Gold Package consists of 2 tickets each for the rides, 6 tickets for Haunted House and 4 tickets for Show."<<endl;
- cout<<"  -> Platinum Package consists of 4 tickets each for the rides, 8 tickets for the Hanuted House and 10 tickets for the Show."<<endl;
- cout<<endl;
- for (i=10;i>0;i--)
+}
+
+void CustBrowseP()
+{
+ char T[][20] = {"Next","Back"};
+ MENU M("",2,30,18,20,3,T);
+ while(1)
  {
-  gotoxy(1,20);
-  cout<<"Scrolling in "<<i<<" seconds ";
-  delay(1000);
+  clrscr();
+  M.Display();
+  printLogo();
+  gotoxy(1,8);
+  cout<<"Save time and money by purchasing group packages==>"<<endl<<endl;
+  cout<<"  -> Economy Package consists of 1 ticket each for Gotham Street,"<<endl<<"     The Killing Joke and Justice League."<<endl;
+  cout<<"  -> Gold Package consists of 2 tickets each for Gotham Street and Batcave, "<<endl<<"     6 tickets for The Killing Joke and 4 tickets for Justice League."<<endl;
+  cout<<"  -> Platinum Package consists of 4 tickets each for Gotham Street, Batcave, "<<endl<<"     8 tickets for the The Killing Joke and 10 tickets for Justice League."<<endl;
+  cout<<endl;
+  char in=getch();
+  if (in==UP && M.gsel()>1)
+   M.psel(M.gsel()-1);
+  else if (in==DOWN && M.gsel()<M.Rnum())
+   M.psel(M.gsel()+1);
+  else if (in==ENTER)
+   if (M.gsel()==1)
+    break;
+   else if (M.gsel()==2)
+   {
+    CustBrowseS();
+    break;
+   }
  }
- clrscr();
 }
 
 void CustBook()
@@ -660,56 +779,56 @@ void CustBookPackage()
 void CustBookTickets()
 {
  cout<<"Book tickets here";
- char T[][20] = {"Ride 1:   ","Ride 2:   ","Haunted House:    ","Show:       ","Confirm"};
+ char T[][20] = {"Gotham Street:   ","Batcave:   ","The Killing Joke:  ","Justice League:   ","Confirm"};
  MENU M("",5,25,8,30,3,T);
  clrscr();
  int R1,R2,H,S;
  M.Display();
  printLogo();
  _setcursortype(_NORMALCURSOR);
- gotoxy(43,9);
+ gotoxy(47,9);
  cin>>R1;
  M.psel(M.gsel()+1);
  clrscr();
  M.Display();
  printLogo();
- gotoxy(43,9);
+ gotoxy(47,9);
  cout<<R1;
- gotoxy(43,12);
+ gotoxy(44,12);
  cin>>R2;
  M.psel(M.gsel()+1);
  clrscr();
  M.Display();
  printLogo();
- gotoxy(43,9);
+ gotoxy(47,9);
  cout<<R1;
- gotoxy(43,12);
+ gotoxy(44,12);
  cout<<R2;
- gotoxy(46,15);
+ gotoxy(49,15);
  cin>>H;
  M.psel(M.gsel()+1);
  clrscr();
  M.Display();
  printLogo();
- gotoxy(43,9);
+ gotoxy(47,9);
  cout<<R1;
- gotoxy(43,12);
+ gotoxy(44,12);
  cout<<R2;
- gotoxy(46,15);
+ gotoxy(49,15);
  cout<<H;
- gotoxy(40,18);
+ gotoxy(47,18);
  cin>>S;
  M.psel(M.gsel()+1);
  clrscr();
  M.Display();
  printLogo();
- gotoxy(43,9);
+ gotoxy(47,9);
  cout<<R1;
- gotoxy(43,12);
+ gotoxy(44,12);
  cout<<R2;
- gotoxy(46,15);
+ gotoxy(49,15);
  cout<<H;
- gotoxy(40,18);
+ gotoxy(47,18);
  cout<<S;
  _setcursortype(_NOCURSOR);
  while(1)
@@ -734,13 +853,13 @@ void CustTransaction(int R1, int R2,int H, int S, int seats[10][2], int cost)
   gotoxy(20,8);
   cout<<"Booking Reference ID: "<<id;
   gotoxy(20,10);
-  cout<<"Tickets for Ride 1: "<<R1;
+  cout<<"Tickets for Gotham Street: "<<R1;
   gotoxy(20,11);
-  cout<<"Tickets for Ride 2: "<<R2;
+  cout<<"Tickets for Batcave: "<<R2;
   gotoxy(20,12);
-  cout<<"Tickets for The Haunted House: "<<H;
+  cout<<"Tickets for The Killing Joke: "<<H;
   gotoxy(20,13);
-  cout<<"Tickets for the show: "<<S;
+  cout<<"Tickets for Justice League: "<<S;
   gotoxy(20,14);
   cout<<"Seats Booked: ";
   for (int i = 0;i<S;i++)
@@ -778,11 +897,11 @@ void CustTransaction(int R1, int R2,int H, int S, int seats[10][2], int cost)
     R<<"------------------------------------\n"<<endl;
 
     R<<"  Booking Reference ID ==> "<<id<<endl<<endl;
-    R<<" Tickets booked for Ride 1: "<<R1<<endl;
-    R<<" Tickets booked for Ride 2: "<<R2<<endl;
-    R<<" Tickets booked for Haunted House: "<<H<<endl;
-    R<<" Tickets booked for the Show: "<<S<<endl<<endl;
-    R<<" Seats booked for the Show: ";
+    R<<" Tickets booked for Gotham Street: "<<R1<<endl;
+    R<<" Tickets booked for Batcave: "<<R2<<endl;
+    R<<" Tickets booked for The Killing Joke: "<<H<<endl;
+    R<<" Tickets booked for Justice League: "<<S<<endl<<endl;
+    R<<" Seats booked for Justice League: ";
     for (i = 0;i<S;i++)
      R<<char(seats[i][0]+65)<<seats[i][1]+1<<" ";
     R<<endl<<endl;
@@ -963,13 +1082,13 @@ void ViewBooking(BOOKING B)
   gotoxy(5,10);
   cout<<"Booking Refernce ID: "<<B.id;
   gotoxy(5,12);
-  cout<<"Ride 1: "<<B.R1;
+  cout<<"Gotham Street: "<<B.R1;
   gotoxy(5,13);
-  cout<<"Ride 2: "<<B.R2;
+  cout<<"Batcave: "<<B.R2;
   gotoxy(5,14);
-  cout<<"Haunted House: "<<B.H;
+  cout<<"The Killing Joke: "<<B.H;
   gotoxy(5,15);
-  cout<<"Show: "<<B.S;
+  cout<<"Justice League: "<<B.S;
   gotoxy(5,16);
   cout<<"Seats: ";
   for (int i = 0;i<B.S;i++)
@@ -1033,6 +1152,7 @@ void ViewCredits()
     break;
  }
 }
+
 /**********************************MAIN**************************************/
 
 void main()
@@ -1043,5 +1163,4 @@ void main()
  _setcursortype(_NOCURSOR);
  WelcomeScreen();
  MainMenu();
- getch();
 }
