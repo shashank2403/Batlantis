@@ -412,8 +412,6 @@ void AdminLogin()
  }
  else
  {
-  gotoxy(27,17);
-  cout<<"Invalid login details!";
   char T[][20] = {"Try Again","Back"};
   MENU M("",2,30,18,20,3,T);
   while(1)
@@ -469,7 +467,7 @@ void AdminView()
 {
  char T[][20] = {"Back"};
  MENU M("",1,30,23,20,3,T);
- int booked[20][2], Nbook=0;
+ int booked[30][2], Nbook=0;
  int R1=0,R2=0,H=0,S=0;
  fstream F("DATA.dat",ios::in|ios::binary);
  BOOKING B;
@@ -659,7 +657,7 @@ void CustBrowseS()
   gotoxy(1,8);
   cout<<"Browse through the different attractions at Batlantis ==>"<<endl;
   cout<<"IV. Justice League"<<endl;
-  cout<<"    Watch the Justice League defend the Earth against the greatest supervillains."<<endl;
+  cout<<"    Watch the Justice League defend Earth against the greatest supervillains."<<endl;
   cout<<"     Cost per head ->				Duration = 30 minutes"<<endl;
   cout<<"      Classic section (Rows A to C) = 5 Dans"<<endl;
   cout<<"      Premium section (Rows D to F) = 10 Dans"<<endl;
@@ -694,9 +692,9 @@ void CustBrowseP()
   printLogo();
   gotoxy(1,8);
   cout<<"Save time and money by purchasing group packages==>"<<endl<<endl;
-  cout<<"  -> Economy Package consists of 1 ticket each for Gotham Street,"<<endl<<"     The Killing Joke and Justice League."<<endl;
+  cout<<"  -> Economy Package consists of 1 ticket each for Gotham Street and Batcave"<<endl<<"     The Killing Joke and Justice League."<<endl;
   cout<<"  -> Gold Package consists of 2 tickets each for Gotham Street and Batcave, "<<endl<<"     6 tickets for The Killing Joke and 4 tickets for Justice League."<<endl;
-  cout<<"  -> Platinum Package consists of 4 tickets each for Gotham Street, Batcave, "<<endl<<"     8 tickets for the The Killing Joke and 10 tickets for Justice League."<<endl;
+  cout<<"  -> Platinum Package consists of 4 tickets for Gotham Street and Batcave,"<<endl<<"     8 tickets for the The Killing Joke and 10 tickets for Justice League."<<endl;
   cout<<endl;
   char in=getch();
   if (in==UP && M.gsel()>1)
@@ -865,7 +863,7 @@ void CustTransaction(int R1, int R2,int H, int S, int seats[10][2], int cost)
   for (int i = 0;i<S;i++)
    cout<<char(seats[i][0]+65)<<seats[i][1]+1<<" ";
   gotoxy(20,16);
-  cout<<"Total Cost: "<<cost;
+  cout<<"Total Cost: "<<cost<<" Dans";
   M.Display();
   printLogo();
   char in=getch();
@@ -892,11 +890,10 @@ void CustTransaction(int R1, int R2,int H, int S, int seats[10][2], int cost)
     F.write((char*)&B,sizeof(B));
     F.close();
     ofstream R("RECEIPT.txt");
-    R<<"      	   BATLANTIS\n";
-    R<<"      Transaction Receipt\n";
+    R<<"       	     BATLANTIS\n";
+    R<<"        Transaction Receipt\n";
     R<<"------------------------------------\n"<<endl;
-
-    R<<"  Booking Reference ID ==> "<<id<<endl<<endl;
+    R<<" Booking Reference ID ==> "<<id<<endl<<endl;
     R<<" Tickets booked for Gotham Street: "<<R1<<endl;
     R<<" Tickets booked for Batcave: "<<R2<<endl;
     R<<" Tickets booked for The Killing Joke: "<<H<<endl;
@@ -906,14 +903,13 @@ void CustTransaction(int R1, int R2,int H, int S, int seats[10][2], int cost)
      R<<char(seats[i][0]+65)<<seats[i][1]+1<<" ";
     R<<endl<<endl;
     R<<"------------------------------------\n";
-    R<<"       Total price==>"<<cost;
+    R<<"       Total price==> "<<cost<<" Dans";
     R<<endl<<endl;
     R<<"Thanks for booking your entertainment with us!\n";
     R<<" We hope you have a great time at Batlantis!\n"<<endl<<endl;
     R<<"------------------------------------\n";
     R<< "Batright 2019. All rights reserved.";
     R.close();
-
     printLogo();
     gotoxy(30,10);
     cout<<"Downloaded receipt!";
@@ -929,7 +925,7 @@ void CustBookSeats(int R1,int R2,int H, int S)
 {
  clrscr();
  fstream fil("DATA.dat",ios::in|ios::binary);
- int booked[20][2], Nbook=0;
+ int booked[30][2], Nbook=0;
  BOOKING B;
  while(fil.read((char*)&B,sizeof(B)))
   for(int i = 0;i<B.S;i++)
@@ -948,6 +944,7 @@ void CustBookSeats(int R1,int R2,int H, int S)
     cursel[1]=j;
     break;
    }
+ //Details
  int classicLimit=3,premiumLimit=6,jokerLimit=10;
  int R1_P=5,R2_P=7,H_P=12;
  int cost=0;
@@ -1044,9 +1041,11 @@ void SearchBooking()
    {
     int found=0;
     fstream F("DATA.dat",ios::in|ios::out);
-    while(F.read((char*)&B,sizeof(B)) && !found)
+    do
+    {
      if (B.id==bookID)
       found=1;
+    }while(!found && F.read((char*)&B,sizeof(B)));
     F.close();
     if (found)
     {
@@ -1055,7 +1054,7 @@ void SearchBooking()
     }
     else
     {
-     gotoxy(27,8);
+     gotoxy(27,9);
      cout<<"Sorry, Booking not found!";
      delay(1000);
      SearchBooking();
@@ -1080,7 +1079,7 @@ void ViewBooking(BOOKING B)
  {
   clrscr();
   gotoxy(5,10);
-  cout<<"Booking Refernce ID: "<<B.id;
+  cout<<"Booking Reference ID: "<<B.id;
   gotoxy(5,12);
   cout<<"Gotham Street: "<<B.R1;
   gotoxy(5,13);
@@ -1108,10 +1107,8 @@ void ViewBooking(BOOKING B)
     Fil1.open("DATA.dat",ios::binary|ios::in);
     Fil2.open("TEMP.dat",ios::binary|ios::out);
     while (Fil1.read((char*)&temp,sizeof(temp)))
-    {
      if (B.id!=temp.id)
       Fil2.write((char*)&temp,sizeof(temp));
-    }
     Fil1.close();
     Fil2.close();
     remove("DATA.dat");
