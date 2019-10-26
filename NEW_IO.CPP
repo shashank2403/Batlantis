@@ -1040,7 +1040,7 @@ void SearchBooking()
    if (M.gsel()==1)
    {
     int found=0;
-    fstream F("DATA.dat",ios::in|ios::out);
+    fstream F("DATA.dat",ios::in|ios::binary);
     do
     {
      if (B.id==bookID)
